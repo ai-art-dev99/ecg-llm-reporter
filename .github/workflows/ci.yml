@@ -8,10 +8,16 @@ on:
 
 jobs:
 
-  # ── Backend Tests ────────────────────────────────────────────────────────────
+  # ── Backend Tests ──────────────────────────────────────────────────────────
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend    
+
+    env:
+      PYTHONPATH: ${{ github.workspace }}/backend  
 
     steps:
       - uses: actions/checkout@v4
@@ -21,13 +27,12 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
-        working-directory: backend
         run: pip install -r requirements.txt
 
       - name: Generate test ECG data
-        working-directory: backend
         run: |
           python -c "
           import neurokit2 as nk, pandas as pd, json, os
@@ -38,27 +43,25 @@ jobs:
           print('ECG data generated')
           "
 
-      - name: Run Week 1 tests
-        working-directory: backend
+      - name: Week 1 — ECG Processing
         run: python ../tests/test_week1_pipeline.py
 
-      - name: Run Week 2 tests
-        working-directory: backend
+      - name: Week 2 — RAG Pipeline
         run: python ../tests/test_week2_rag.py
 
-      - name: Run Week 3 tests (schema + prompt only)
-        working-directory: backend
+      - name: Week 3 — LLM Schema & Prompts
         run: python ../tests/test_week3_llm.py
-        # API tests skipped — no GROQ_API_KEY in CI
 
-      - name: Run Week 4 tests
-        working-directory: backend
+      - name: Week 4 — Monitoring
         run: python ../tests/test_week4_monitoring.py
 
-  # ── Frontend Build ───────────────────────────────────────────────────────────
+  # ── Frontend Build ─────────────────────────────────────────────────────────
   test-frontend:
     name: Frontend Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -72,11 +75,10 @@ jobs:
 
       - name: Install & Build
         run: |
-          cd frontend
           npm install
           npm run build
 
-  # ── Deploy to Render ─────────────────────────────────────────────────────────
+  # ── Deploy to Render ───────────────────────────────────────────────────────
   deploy:
     name: Deploy to Render
     runs-on: ubuntu-latest
