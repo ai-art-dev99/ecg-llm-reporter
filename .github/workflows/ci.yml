@@ -23,13 +23,12 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+        working-directory: backend
+        run: pip install -r requirements.txt
 
       - name: Generate test ECG data
+        working-directory: backend
         run: |
-          cd backend
           python -c "
           import neurokit2 as nk, pandas as pd, json, os
           os.makedirs('data/mitdb', exist_ok=True)
@@ -40,17 +39,21 @@ jobs:
           "
 
       - name: Run Week 1 tests
-        run: cd backend && python ../tests/test_week1_pipeline.py
+        working-directory: backend
+        run: python ../tests/test_week1_pipeline.py
 
       - name: Run Week 2 tests
-        run: cd backend && python ../tests/test_week2_rag.py
+        working-directory: backend
+        run: python ../tests/test_week2_rag.py
 
       - name: Run Week 3 tests (schema + prompt only)
-        run: cd backend && python ../tests/test_week3_llm.py
+        working-directory: backend
+        run: python ../tests/test_week3_llm.py
         # API tests skipped — no GROQ_API_KEY in CI
 
       - name: Run Week 4 tests
-        run: cd backend && python ../tests/test_week4_monitoring.py
+        working-directory: backend
+        run: python ../tests/test_week4_monitoring.py
 
   # ── Frontend Build ───────────────────────────────────────────────────────────
   test-frontend:
