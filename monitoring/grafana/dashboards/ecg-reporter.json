@@ -1,0 +1,424 @@
+{
+    "title": "ECG LLM Reporter",
+    "uid": "ecg-llm-reporter",
+    "schemaVersion": 38,
+    "refresh": "10s",
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "panels": [
+        {
+            "id": 1,
+            "type": "stat",
+            "title": "Total API Requests",
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 4,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "sum(ecg_api_requests_total)",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 2,
+            "type": "stat",
+            "title": "Reports Generated",
+            "gridPos": {
+                "x": 4,
+                "y": 0,
+                "w": 4,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "sum(llm_reports_generated_total)",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "colorMode": "background"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "Active Requests",
+            "gridPos": {
+                "x": 8,
+                "y": 0,
+                "w": 4,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "ecg_api_active_requests",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "colorMode": "background"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 20
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "Knowledge Base Chunks",
+            "gridPos": {
+                "x": 12,
+                "y": 0,
+                "w": 4,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "rag_knowledge_base_chunks_total",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "colorMode": "background"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "purple",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 5,
+            "type": "stat",
+            "title": "LLM Errors",
+            "gridPos": {
+                "x": 16,
+                "y": 0,
+                "w": 4,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "sum(llm_errors_total)",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "colorMode": "background"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 1
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 6,
+            "type": "timeseries",
+            "title": "API Request Rate (req/min)",
+            "gridPos": {
+                "x": 0,
+                "y": 4,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(ecg_api_requests_total[1m])) * 60",
+                    "legendFormat": "requests/min",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps",
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                }
+            }
+        },
+        {
+            "id": 7,
+            "type": "timeseries",
+            "title": "API Latency (p50 / p95 / p99)",
+            "gridPos": {
+                "x": 12,
+                "y": 4,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(ecg_api_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p50",
+                    "datasource": "Prometheus"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(ecg_api_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "datasource": "Prometheus"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(ecg_api_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p99",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                }
+            }
+        },
+        {
+            "id": 8,
+            "type": "timeseries",
+            "title": "LLM Inference Time",
+            "gridPos": {
+                "x": 0,
+                "y": 12,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(llm_inference_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p50",
+                    "datasource": "Prometheus"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(llm_inference_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                }
+            }
+        },
+        {
+            "id": 9,
+            "type": "timeseries",
+            "title": "RAG Retrieval Time",
+            "gridPos": {
+                "x": 12,
+                "y": 12,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(rag_retrieval_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p50",
+                    "datasource": "Prometheus"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(rag_retrieval_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s"
+                }
+            }
+        },
+        {
+            "id": 10,
+            "type": "piechart",
+            "title": "Report Urgency Distribution",
+            "gridPos": {
+                "x": 0,
+                "y": 20,
+                "w": 8,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by (urgency) (llm_report_urgency_total)",
+                    "legendFormat": "{{urgency}}",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "pieType": "pie"
+            }
+        },
+        {
+            "id": 11,
+            "type": "piechart",
+            "title": "ECG Rhythm Distribution",
+            "gridPos": {
+                "x": 8,
+                "y": 20,
+                "w": 8,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by (rhythm_type) (ecg_rhythm_classified_total)",
+                    "legendFormat": "{{rhythm_type}}",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "pieType": "pie"
+            }
+        },
+        {
+            "id": 12,
+            "type": "piechart",
+            "title": "Records by Source",
+            "gridPos": {
+                "x": 16,
+                "y": 20,
+                "w": 8,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by (source) (ecg_records_processed_total)",
+                    "legendFormat": "{{source}}",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "pieType": "pie"
+            }
+        },
+        {
+            "id": 13,
+            "type": "heatmap",
+            "title": "Signal Quality Distribution",
+            "gridPos": {
+                "x": 0,
+                "y": 28,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(ecg_signal_quality_score_bucket[5m])) by (le)",
+                    "datasource": "Prometheus"
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "type": "bargauge",
+            "title": "Anomalies Detected",
+            "gridPos": {
+                "x": 12,
+                "y": 28,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by (anomaly_type) (ecg_anomalies_detected_total)",
+                    "legendFormat": "{{anomaly_type}}",
+                    "datasource": "Prometheus"
+                }
+            ],
+            "options": {
+                "orientation": "horizontal",
+                "displayMode": "gradient"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-RdYlGr"
+                    }
+                }
+            }
+        }
+    ]
+}

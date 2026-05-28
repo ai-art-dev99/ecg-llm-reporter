@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+*.egg-info/
+
+# Data (don't commit ECG data)
+data/mitdb/
+chroma_db/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Render
+.render/

@@ -1,0 +1,51 @@
+services:
+
+  # ── Backend (FastAPI) ────────────────────────────────────────────────────────
+  - type: web
+    name: ecg-llm-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # set manually in Render dashboard
+
+      - key: LANGSMITH_API_KEY
+        sync: false          # optional
+
+      - key: LANGSMITH_PROJECT
+        value: ecg-reporter
+
+      - key: ANONYMIZED_TELEMETRY
+        value: "False"
+
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+      - key: RENDER
+        value: "true"
+
+    disk:
+      name: chroma-data
+      mountPath: /app/chroma_db
+      sizeGB: 1              # free tier: 1GB persistent disk
+
+    healthCheckPath: /health
+
+  # ── Frontend (Next.js) ───────────────────────────────────────────────────────
+  - type: web
+    name: ecg-llm-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: ecg-llm-backend
+          type: web
+          property: host        # auto-filled with backend URL
