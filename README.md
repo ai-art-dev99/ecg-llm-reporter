@@ -1,108 +1,121 @@
-# 🫀 ECG LLM Reporter
+# ECG LLM Reporter 🫀
 
-> AI-powered ECG analysis using RAG + LLM, fully containerised.  
-> Built for the UK ML/AI job market — NHS HealthTech portfolio project.
+An AI system that analyses ECG signals and generates structured clinical reports — grounded in ESC/AHA/ACC medical guidelines, not just LLM guesswork.
+
+Upload a CSV ECG recording. The system extracts 20+ clinical features, retrieves relevant passages from established cardiology guidelines, and generates a structured diagnostic report with a full observability stack behind it.
+
+🔗 **Live Demo:** [your-render-url]
+
+---
+
+## Why RAG for medical reports?
+
+An LLM generating cardiac reports from scratch will hallucinate clinical thresholds. Grounding the pipeline in **ESC/AHA/ACC guidelines via ChromaDB** means every recommendation is traceable to a source — the same way a junior doctor checks the handbook before writing a report.
 
 ---
 
 ## Architecture
 
 ```
-ECG Input (CSV / Upload / Synthetic)
-         ↓
-  Signal Processing (NeuroKit2)      ← Week 1 ✅
-         ↓
-  Feature Extraction (HR, HRV, QT…)  ← Week 1 ✅
-         ↓
-  RAG Pipeline (ESC/AHA Guidelines)  ← Week 2
-         ↓
-  LLM Report Generation (BioMistral) ← Week 3
-         ↓
-  FastAPI Backend                    ← Week 1 skeleton ✅
-         ↓
-  Monitoring (Prometheus + Grafana)  ← Week 4
-         ↓
-  React/Next.js UI                   ← Week 5
-         ↓
-  Deploy: HuggingFace Spaces          ← Week 6
+ECG Input (CSV upload / synthetic)
+        ↓
+Signal Processing — NeuroKit2
+        ↓
+Feature Extraction (20+ clinical features)
+  HR · HRV · QT interval · ST deviation · P/R/S/T waves
+        ↓
+RAG Pipeline
+  ESC / AHA / ACC guidelines → ChromaDB → LangChain retrieval
+        ↓
+LLM Report Generation
+  Llama 3.3 70B via Groq API → structured JSON output
+        ↓
+FastAPI Backend
+        ↓
+Next.js Frontend — real-time ECG visualisation + report export
+
+Observability: Prometheus · Grafana · LangSmith LLM tracing
+CI/CD: GitHub Actions → Render
 ```
+
+---
+
+## Clinical Features Extracted
+
+| Category | Features |
+|---|---|
+| Heart Rate | Mean · Min · Max · Std · Classification |
+| HRV | RMSSD · SDNN · pNN50 · Mean RR |
+| Intervals | PR · QRS · QT · QTc (Bazett) · RR |
+| Amplitudes | P · R · S · T waves · ST deviation |
+| Anomalies | Tachycardia · Bradycardia · QT prolongation · Wide QRS · ST elevation/depression |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Signal Processing | NeuroKit2 · SciPy · NumPy |
+| RAG | LangChain · ChromaDB · ESC/AHA/ACC guidelines |
+| LLM | Llama 3.3 70B · Groq API |
+| Backend | Python · FastAPI · Pydantic |
+| Frontend | Next.js · TypeScript · TailwindCSS |
+| Observability | Prometheus · Grafana · LangSmith |
+| Containerisation | Docker Compose |
+| CI/CD | GitHub Actions |
+| Deployment | Render |
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Clone & configure
+git clone https://github.com/ai-art-dev99/ecg-llm-reporter.git
+cd ecg-llm-reporter
+
 cp .env.example .env
-# fill in HF_TOKEN in .env
+# Add GROQ_API_KEY and LANGSMITH_API_KEY
 
-# 2. Run backend only (Week 1)
-docker compose up backend
-
-# 3. Run with RAG (Week 2+)
-docker compose --profile rag up
-
-# 4. Run full stack with monitoring
+# Full stack with monitoring
 docker compose --profile rag --profile monitoring --profile frontend up
 ```
 
----
-
-## API Endpoints (Week 1)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/records` | List local ECG records |
-| GET | `/records/{name}/analyze` | Analyze a named record |
-| POST | `/analyze/upload` | Upload CSV ECG file |
-| POST | `/analyze/synthetic` | Generate + analyze synthetic ECG |
-
-Interactive docs: `http://localhost:8000/docs`
+| Service | URL |
+|---|---|
+| Backend API | http://localhost:8000/docs |
+| Frontend | http://localhost:3000 |
+| Grafana | http://localhost:3001 |
+| Prometheus | http://localhost:9090 |
 
 ---
 
-## ECG Features Extracted
+## API
 
-| Category | Features |
-|----------|----------|
-| Heart Rate | Mean, Min, Max, Std, Classification |
-| HRV | RMSSD, SDNN, pNN50, Mean RR |
-| Intervals | PR, QRS, QT, QTc (Bazett), RR |
-| Amplitudes | P, R, S, T waves, ST deviation |
-| Anomalies | Tachycardia, Bradycardia, QT prolonged, Wide QRS, ST elevation/depression |
+```bash
+# Analyse an uploaded ECG file
+POST /analyze/upload
+
+# Analyse a named local record
+GET /records/{name}/analyze
+
+# Generate synthetic ECG + analyse
+POST /analyze/synthetic
+
+# Health check
+GET /health
+```
 
 ---
 
 ## Dataset
 
-- **MIT-BIH Arrhythmia Database** — 48 half-hour ECG recordings (360 Hz, 2 leads)
-- Download: [PhysioNet](https://physionet.org/content/mitdb/) (free account required)
-- For development: synthetic records generated via NeuroKit2
+Uses the **MIT-BIH Arrhythmia Database** — 48 half-hour ECG recordings at 360 Hz.  
+Available free at [PhysioNet](https://physionet.org/content/mitdb/).  
+For development: synthetic records generated via NeuroKit2 (no download needed).
 
 ---
 
-## Project Roadmap
+## Author
 
-- [x] **Week 1** — ECG processing pipeline + data loader + feature extractor
-- [ ] **Week 2** — RAG pipeline (ESC/AHA guidelines → ChromaDB)
-- [ ] **Week 3** — LLM integration (BioMistral via HuggingFace)
-- [ ] **Week 4** — Monitoring (Prometheus metrics + Grafana dashboard)
-- [ ] **Week 5** — Frontend (Next.js + ECG visualiser)
-- [ ] **Week 6** — Deploy to HuggingFace Spaces
-
----
-
-## Tech Stack
-
-| Layer | Tool |
-|-------|------|
-| Signal Processing | NeuroKit2, SciPy, NumPy |
-| Data | MIT-BIH (PhysioNet), WFDB |
-| RAG | LangChain + ChromaDB |
-| LLM | BioMistral-7B / Llama-3.2 |
-| API | FastAPI + Pydantic |
-| Monitoring | Prometheus + Grafana + LangSmith |
-| Frontend | Next.js + TailwindCSS |
-| Container | Docker Compose |
-| Deploy | HuggingFace Spaces |
+**Amirparsa Rouhi** · [aprouhi.com](https://aprouhi.com) · [LinkedIn](https://linkedin.com/in/amirparsa-rouhi)
