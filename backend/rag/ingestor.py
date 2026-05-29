@@ -259,8 +259,15 @@ class RAGIngestor:
         self.chunker = TextChunker(chunk_size=400, overlap=80)
         self.ef = build_embedding_function()
 
-        # Persistent ChromaDB client
-        self.client = chromadb.PersistentClient(path=persist_dir)
+        # On Render free tier: no persistent disk → use in-memory client
+        use_memory = os.environ.get("RENDER") == "true"
+
+        if use_memory:
+            print("[ChromaDB] Using in-memory client (Render free tier)")
+            self.client = chromadb.EphemeralClient()
+        else:
+            self.client = chromadb.PersistentClient(path=persist_dir)
+
         self.collection = self.client.get_or_create_collection(
             name=self.COLLECTION_NAME,
             embedding_function=self.ef,

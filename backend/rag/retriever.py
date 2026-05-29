@@ -13,6 +13,7 @@ Supports:
 
 from dataclasses import dataclass
 from typing import Optional
+import os
 
 import chromadb
 
@@ -75,10 +76,20 @@ class ECGRetriever:
 
     COLLECTION_NAME = "ecg_knowledge"
 
-    def __init__(self, persist_dir: str = "./chroma_db"):
+    def __init__(self, persist_dir: str = "./chroma_db", client=None):
         self.persist_dir = persist_dir
         self.ef = build_embedding_function()
-        self.client = chromadb.PersistentClient(path=persist_dir)
+
+        if client:
+            # Use shared client (important for in-memory mode)
+            self.client = client
+        else:
+            use_memory = os.environ.get("RENDER") == "true"
+            if use_memory:
+                self.client = chromadb.EphemeralClient()
+            else:
+                self.client = chromadb.PersistentClient(path=persist_dir)
+
         self.collection = self.client.get_or_create_collection(
             name=self.COLLECTION_NAME,
             embedding_function=self.ef,

@@ -53,7 +53,8 @@ async def lifespan(app: FastAPI):
         from rag.retriever import ECGRetriever
         ingestor = RAGIngestor(persist_dir="./chroma_db")
         ingestor.ingest_all(pdf_dir="data/knowledge_base", include_web=True)
-        retriever = ECGRetriever(persist_dir="./chroma_db")
+        # Pass the same client so in-memory data is shared
+        retriever = ECGRetriever(persist_dir="./chroma_db", client=ingestor.client)
         stats = retriever.get_collection_stats()
         rag_knowledge_base_size.set(stats["total_chunks"])
         print(f"[Startup] RAG ready — {stats['total_chunks']} chunks")
