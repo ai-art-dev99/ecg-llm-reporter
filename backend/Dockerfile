@@ -7,8 +7,12 @@ RUN apt-get update && apt-get install -y gcc g++ curl && rm -rf /var/lib/apt/lis
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-cache sentence-transformer model
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2'); print('Model cached')" || echo "Model cache skipped (offline)"
+# sentence-transformers only for local Docker (not Render)
+# Installed separately so Render build doesn't OOM
+RUN if [ "$RENDER" != "true" ]; then \
+    pip install --no-cache-dir sentence-transformers==3.0.0 && \
+    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')" || true; \
+    fi
 
 COPY . .
 

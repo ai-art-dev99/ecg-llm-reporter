@@ -83,7 +83,14 @@ class TFIDFEmbedding(EmbeddingFunction):
 
 
 def build_embedding_function() -> EmbeddingFunction:
-    """Try sentence-transformers first, fall back to TF-IDF."""
+    """
+    On Render free tier: always use TF-IDF (512MB RAM limit).
+    Locally / Docker: try sentence-transformers first.
+    """
+    if os.environ.get("RENDER") == "true":
+        print("[Embedding] Render detected — using TF-IDF (low memory mode)")
+        return TFIDFEmbedding()
+
     try:
         ef = SentenceTransformerEmbedding()
         print("[Embedding] Using sentence-transformers (high quality)")

@@ -14,14 +14,17 @@ langchain-community==0.2.1
 langchain-huggingface==0.0.3
 langchain-text-splitters==0.2.1
 chromadb==0.5.0
-sentence-transformers==3.0.0
 pypdf==4.2.0
 beautifulsoup4==4.12.3
 lxml==5.2.2
 scikit-learn==1.5.0
+
+# sentence-transformers only for local/Docker (too heavy for Render free tier)
+# install manually if needed: pip install sentence-transformers torch
 
 # Week 3: LLM
 groq==1.4.0
 
 # Week 4: Monitoring
 prometheus-client==0.20.0
+langsmith==0.1.77
